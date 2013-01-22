@@ -51,9 +51,15 @@ setup () {
   if [ -z "$CHECKOUT" ]; then
     CHECKOUT=~/devel
   fi
+
   echo $CHECKOUT > $CONFIG
   if [ ! -d "$CHECKOUT" ]; then
      mkdir -p $CHECKOUT
+  fi
+
+  if [ -z "$(git config --get user.email)" ]; then
+      read -p "Git email address> " email
+      git config --global user.email $email
   fi
   exit
 }
