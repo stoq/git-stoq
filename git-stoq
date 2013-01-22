@@ -1,0 +1,111 @@
+#!/bin/bash
+PROGNAME="git-stoq"
+CONFIG=$HOME/.stoq-dev.git
+
+usage () {
+    echo "Usage: $PROGNAME [options]
+
+  Available options:
+    -i,--init         Create a new set of checkouts
+    -l,--list         List branches
+    -s,--setup        Configure development environment
+    -u,--update       Update repository(ies)
+    --help            Show this message"
+  exit
+}
+
+init () {
+  CHECKOUT=$(cat $CONFIG)
+  TREE=$1
+  git clone http://gerrit.async.com.br/kiwi $CHECKOUT/$TREE/kiwi
+  git clone http://gerrit.async.com.br/stoqdrivers $CHECKOUT/$TREE/stoqdrivers
+  git clone http://gerrit.async.com.br/stoq-test2 $CHECKOUT/$TREE/stoq
+  exit
+}
+
+setup () {
+  read -p "Checkout [~/devel]> " CHECKOUT
+  if [ -z "$CHECKOUT" ]; then
+    CHECKOUT=~/devel
+  fi
+  echo $CHECKOUT > $CONFIG
+  if [ ! -d "$CHECKOUT" ]; then
+     mkdir -p $CHECKOUT
+  fi
+  exit
+}
+
+update () {
+  CHECKOUT=$(cat $CONFIG)
+  TREE=$1
+  cd $CHECKOUT/$TREE/kiwi && git pull
+  cd $CHECKOUT/$TREE/stoqdrivers && git pull
+  cd $CHECKOUT/$TREE/stoq && git pull
+  exit
+}
+
+list() {
+  CHECKOUT=$(cat $CONFIG)
+  ls $CHECKOUT|sort
+  exit
+}
+
+develop () {
+  CHECKOUT=$(cat $CONFIG)
+  TREE=$1
+  if [ -z "$TREE" ]; then
+      if [ "$(ls $CHECKOUT|wc -l)" = "1" ]; then
+          TREE=$(ls $CHECKOUT)
+      else
+          echo "Select a tree:"
+          ls $CHECKOUT|sort
+          exit
+      fi
+  fi
+  echo "Entering tree: $TREE"
+  export CHECKOUT=$CHECKOUT/$TREE
+  SCRIPT=$(tempfile --suffix=.sh)
+  trap "rm $SCRIPT" SIGINT SIGTERM
+  cat <<EOF > $SCRIPT
+test -f ~/.bashrc && source ~/.bashrc
+export PS1="[$TREE] \\u@\\h:\\w\$ "
+export PATH=$CHECKOUT/stoq/bin:\$PATH
+export PYTHONPATH=$CHECKOUT/stoq:$CHECKOUT/kiwi:$CHECKOUT/stoqdrivers:\${PYTHONPATH}
+export STOQLIB_TEST_QUICK=1
+export STOQ_DISABLE_CRASHREPORT=1
+
+for dir in kiwi stoqdrivers stoq; do
+    cd \$CHECKOUT/\$dir
+    kiwi-i18n -c > /dev/null 2>&1
+done
+# cd to the working tree, so we are ready to work!
+cd \$CHECKOUT
+EOF
+  bash --rcfile $SCRIPT
+  exit
+}
+
+noargs () {
+  develop
+  exit
+}
+
+TEMP=`getopt -o hi:lsu --long help,init:,list,setup,update \
+             -n $PROGNAME -- "$@"`
+
+if [ $? != 0 ] ; then exit 1 ; fi
+
+# Note the quotes around `$TEMP': they are essential!
+eval set -- "$TEMP"
+
+while true; do
+  case "$1" in
+    -h | --help ) usage; shift ;;
+    -i | --init ) init "$2"; shift ;;
+    -l | --list ) list; shift ;;
+    -s | --setup ) setup; shift ;;
+    -u | --update ) update; shift 2 ;;
+    -- ) develop "$2"; shift; break ;;
+    * ) echo "*"; break ;;
+  esac
+done
