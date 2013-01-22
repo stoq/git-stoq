@@ -1,4 +1,21 @@
 #!/bin/bash
+#
+# git-stoq: a simple script to simplify development of stoq using git
+#
+# Installation
+# $ wget http://git.async.com.br/cgi-bin/cgit/git-stoq/plain/git-stoq -O ~/bin/git-stoq
+# $ chmod +x ~/bin/git-stoq
+#
+# Development setup:
+# $ git-stoq --setup
+#
+# Creating a new branch:
+# $ git-stoq --init master
+#
+# Entering development mode for the default branch:
+# $ git-stoq
+#
+
 PROGNAME="git-stoq"
 CONFIG=$HOME/.stoq-dev.git
 
