@@ -34,9 +34,15 @@ usage () {
 init () {
   CHECKOUT=$(cat $CONFIG)
   TREE=$1
+
   git clone http://gerrit.async.com.br/kiwi $CHECKOUT/$TREE/kiwi
+  scp -p -P 29418 gerrit.async.com.br:hooks/commit-msg $CHECKOUT/$TREE/kiwi/.git/hooks
+
   git clone http://gerrit.async.com.br/stoqdrivers $CHECKOUT/$TREE/stoqdrivers
+  scp -p -P 29418 gerrit.async.com.br:hooks/commit-msg $CHECKOUT/$TREE/stoqdrivers/.git/hooks
+
   git clone http://gerrit.async.com.br/stoq-test2 $CHECKOUT/$TREE/stoq
+  scp -p -P 29418 gerrit.async.com.br:hooks/commit-msg $CHECKOUT/$TREE/stoq/.git/hooks
   exit
 }
 
