@@ -37,12 +37,19 @@ init () {
 
   git clone http://gerrit.async.com.br/kiwi $CHECKOUT/$TREE/kiwi
   scp -p -P 29418 gerrit.async.com.br:hooks/commit-msg $CHECKOUT/$TREE/kiwi/.git/hooks
+  git config remote.review.url ssh+git://gerrit.async.com.br:29418/kiwi
+  git config remote.review.push HEAD:refs/for/master
 
   git clone http://gerrit.async.com.br/stoqdrivers $CHECKOUT/$TREE/stoqdrivers
   scp -p -P 29418 gerrit.async.com.br:hooks/commit-msg $CHECKOUT/$TREE/stoqdrivers/.git/hooks
+  git config remote.review.url ssh+git://gerrit.async.com.br:29418/stoqdrivers
+  git config remote.review.push HEAD:refs/for/master
 
   git clone http://gerrit.async.com.br/stoq-test2 $CHECKOUT/$TREE/stoq
   scp -p -P 29418 gerrit.async.com.br:hooks/commit-msg $CHECKOUT/$TREE/stoq/.git/hooks
+  git config remote.review.url ssh+git://gerrit.async.com.br:29418/stoq-test2
+  git config remote.review.push HEAD:refs/for/master
+
   exit
 }
 
