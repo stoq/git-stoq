@@ -82,7 +82,7 @@ develop () {
   echo "Entering tree: $TREE"
   export CHECKOUT=$CHECKOUT/$TREE
   SCRIPT=$(tempfile --suffix=.sh)
-  trap "rm $SCRIPT" SIGINT SIGTERM
+  trap "rm $SCRIPT" EXIT
   cat <<EOF > $SCRIPT
 test -f ~/.bashrc && source ~/.bashrc
 export PS1="[$TREE] \\u@\\h:\\w\$ "
