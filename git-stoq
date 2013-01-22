@@ -102,11 +102,6 @@ EOF
   exit
 }
 
-noargs () {
-  develop
-  exit
-}
-
 TEMP=`getopt -o hi:lsu --long help,init:,list,setup,update \
              -n $PROGNAME -- "$@"`
 
