@@ -47,10 +47,10 @@ init () {
   git config remote.review.url ssh+git://gerrit.async.com.br:29418/stoqdrivers
   git config remote.review.push HEAD:refs/for/master
 
-  git clone http://gerrit.async.com.br/stoq-test2 $CHECKOUT/$TREE/stoq
+  git clone http://gerrit.async.com.br/stoq $CHECKOUT/$TREE/stoq
   cd $CHECKOUT/$TREE/stoq
   scp -p -P 29418 gerrit.async.com.br:hooks/commit-msg .git/hooks
-  git config remote.review.url ssh+git://gerrit.async.com.br:29418/stoq-test2
+  git config remote.review.url ssh+git://gerrit.async.com.br:29418/stoq
   git config remote.review.push HEAD:refs/for/master
 
   exit
