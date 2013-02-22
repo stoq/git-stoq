@@ -107,7 +107,8 @@ develop () {
   trap "rm $SCRIPT" EXIT
   cat <<EOF > $SCRIPT
 test -f ~/.bashrc && source ~/.bashrc
-export PS1="[$TREE] \\u@\\h:\\w\$ "
+source /etc/bash_completition
+export PS1="\\\$(__git_ps1 \"[%s]\") \\u@\\h:\\w\$ "
 export PATH=$CHECKOUT/stoq/bin:\$PATH
 export PYTHONPATH=$CHECKOUT/stoq:$CHECKOUT/kiwi:$CHECKOUT/stoqdrivers:\${PYTHONPATH}
 export STOQLIB_TEST_QUICK=1
