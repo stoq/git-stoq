@@ -15,9 +15,22 @@
 # Entering development mode for the default branch:
 # $ git-stoq
 #
+# Or if you choose to use repo, setup de development and, instead of
+# initiating a new branch, just run:
+# $ git-stoq --repo
+#
+# That will initialize repo if it wasn't set before and initiate a
+# stoq shell just like the other approach. This is the preferred
+# way for working with git, while the other is a just to make it easy
+# for people coming from bzr-stoq to use git-stoq.
+#
 
 PROGNAME="git-stoq"
+MANIFEST_URL="http://gerrit.async.com.br/stoq-manifest"
 CONFIG=$HOME/.stoq-dev.git
+BIN_PATH=$HOME/bin
+REPO_PATH=$BIN_PATH/repo
+PROJECTS="kiwi stoq stoqdrivers"
 
 usage () {
     echo "Usage: $PROGNAME [options]
@@ -25,6 +38,7 @@ usage () {
   Available options:
     -i,--init         Create a new set of checkouts
     -l,--list         List branches
+    -r,--repo         Initiate stoq shell for use with repo
     -s,--setup        Configure development environment
     -u,--update       Update repository(ies)
     --help            Show this message"
@@ -35,23 +49,13 @@ init () {
   CHECKOUT=$(cat $CONFIG)
   TREE=$1
 
-  git clone http://gerrit.async.com.br/kiwi $CHECKOUT/$TREE/kiwi
-  cd $CHECKOUT/$TREE/kiwi
-  scp -p -P 29418 gerrit.async.com.br:hooks/commit-msg .git/hooks
-  git config remote.review.url ssh+git://gerrit.async.com.br:29418/kiwi
-  git config remote.review.push HEAD:refs/for/master
-
-  git clone http://gerrit.async.com.br/stoqdrivers $CHECKOUT/$TREE/stoqdrivers
-  cd $CHECKOUT/$TREE/stoqdrivers
-  scp -p -P 29418 gerrit.async.com.br:hooks/commit-msg .git/hooks
-  git config remote.review.url ssh+git://gerrit.async.com.br:29418/stoqdrivers
-  git config remote.review.push HEAD:refs/for/master
-
-  git clone http://gerrit.async.com.br/stoq $CHECKOUT/$TREE/stoq
-  cd $CHECKOUT/$TREE/stoq
-  scp -p -P 29418 gerrit.async.com.br:hooks/commit-msg .git/hooks
-  git config remote.review.url ssh+git://gerrit.async.com.br:29418/stoq
-  git config remote.review.push HEAD:refs/for/master
+  CHECKOUT_TREE=$CHECKOUT/$TREE
+  for PROJECT in $PROJECTS; do
+    git clone http://gerrit.async.com.br/$PROJECT $CHECKOUT_TREE/$PROJECT
+    scp -p -P 29418 gerrit.async.com.br:hooks/commit-msg \
+        $CHECKOUT_TREE/$PROJECT/.git/hooks
+    _configure $CHECKOUT_TREE $PROJECT
+  done
 
   exit
 }
@@ -89,6 +93,33 @@ list() {
   exit
 }
 
+repo () {
+  if [ ! -d "$BIN_PATH" ]; then
+    mkdir -p $BIN_PATH
+  fi
+  if [ ! -f "$REPO_PATH" ]; then
+    echo "No repo found... Download it to $REPO_PATH"
+    # Instructions copied from: http://source.android.com/source/downloading.html
+    curl https://dl-ssl.google.com/dl/googlesource/git-repo/repo > $REPO_PATH
+    chmod a+x $REPO_PATH
+  fi
+
+  TREE=""
+  CHECKOUT=$(cat $CONFIG)
+  if [ ! -d "$CHECKOUT/.repo" ]; then
+    echo "Repo configuration did not exist. Initiating it..."
+    cd $CHECKOUT
+    # Using REPO_PATH to avoid conflict with the internal repo name
+    $REPO_PATH init -u $MANIFEST_URL
+    $REPO_PATH sync
+    for PROJECT in $PROJECTS; do
+      _configure $CHECKOUT $PROJECT
+    done
+  fi
+
+  _shell $CHECKOUT $TREE
+}
+
 develop () {
   CHECKOUT=$(cat $CONFIG)
   TREE=$1
@@ -101,8 +132,28 @@ develop () {
           exit
       fi
   fi
+
   echo "Entering tree: $TREE"
-  export CHECKOUT=$CHECKOUT/$TREE
+  _shell $CHECKOUT $TREE
+}
+
+_configure () {
+  CHECKOUT=$1
+  PROJECT=$2
+
+  cd $CHECKOUT/$PROJECT
+  git config remote.review.url ssh+git://gerrit.async.com.br:29418/$PROJECT
+  git config remote.review.push HEAD:refs/for/master
+}
+
+_shell () {
+  TREE=$2
+  if [ -z "$TREE" ]; then
+    # When using repo, put 'stoq' on TREE for PS1
+    TREE="stoq"
+  fi
+
+  export CHECKOUT="$1/$2"
   SCRIPT=$(tempfile --suffix=.sh)
   trap "rm $SCRIPT" EXIT
   cat <<EOF > $SCRIPT
@@ -125,7 +176,7 @@ EOF
   exit
 }
 
-TEMP=`getopt -o hi:lsu --long help,init:,list,setup,update \
+TEMP=`getopt -o hi:lrsu --long help,init:,list,repo,setup,update \
              -n $PROGNAME -- "$@"`
 
 if [ $? != 0 ] ; then exit 1 ; fi
@@ -138,6 +189,7 @@ while true; do
     -h | --help ) usage; shift ;;
     -i | --init ) init "$2"; shift ;;
     -l | --list ) list; shift ;;
+    -r | --repo ) repo; shift; break ;;
     -s | --setup ) setup; shift ;;
     -u | --update ) update; shift 2 ;;
     -- ) develop "$2"; shift; break ;;
