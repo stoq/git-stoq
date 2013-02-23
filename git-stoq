@@ -159,7 +159,7 @@ _shell () {
   cat <<EOF > $SCRIPT
 test -f ~/.bashrc && source ~/.bashrc
 source /etc/bash_completion
-export PS1="[$TREE] \\u@\\h\\\$(__git_ps1 \"(%s)\") :\\w\$ "
+export PS1="[$TREE\\\$(__git_ps1 \"(%s)\")] \\u@\\h:\\w\$ "
 export PATH=$CHECKOUT/stoq/bin:\$PATH
 export PYTHONPATH=$CHECKOUT/stoq:$CHECKOUT/kiwi:$CHECKOUT/stoqdrivers:\${PYTHONPATH}
 export STOQLIB_TEST_QUICK=1
