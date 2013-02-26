@@ -154,6 +154,14 @@ _shell () {
   fi
 
   export CHECKOUT="$1/$2"
+  for PROJECT in $PROJECTS; do
+    # Make sure we add new hooks every time the shell inits
+    if [ -d "$CHECKOUT/$PROJECT/tools/git-hooks/" ]; then
+      cp -au $CHECKOUT/$PROJECT/tools/git-hooks/* \
+             $CHECKOUT/$PROJECT/.git/hooks/
+    fi
+  done
+
   SCRIPT=$(tempfile --suffix=.sh)
   trap "rm $SCRIPT" EXIT
   cat <<EOF > $SCRIPT
