@@ -3,7 +3,7 @@
 # git-stoq: a simple script to simplify development of stoq using git
 #
 # Installation
-# $ wget http://git.async.com.br/cgi-bin/cgit/git-stoq/plain/git-stoq -O ~/bin/git-stoq
+# $ wget https://raw.github.com/stoq/git-stoq/master/git-stoq -O ~/bin/git-stoq
 # $ chmod +x ~/bin/git-stoq
 #
 # Development setup:
@@ -15,7 +15,7 @@
 # Entering development mode for the default branch:
 # $ git-stoq
 #
-# Or if you choose to use repo, setup de development and, instead of
+# Or if you choose to use repo, setup the development and, instead of
 # initiating a new branch, just run:
 # $ git-stoq --repo
 #
@@ -167,7 +167,7 @@ _shell () {
   cat <<EOF > $SCRIPT
 test -f ~/.bashrc && source ~/.bashrc
 source /etc/bash_completion
-export PS1="[$TREE\\\$(__git_ps1 \"(%s)\")] \\u@\\h:\\w\$ "
+export STOQ_BRANCH=$TREE
 export PATH=$CHECKOUT/stoq/bin:\$PATH
 export PYTHONPATH=$CHECKOUT/stoq:$CHECKOUT/kiwi:$CHECKOUT/stoqdrivers:\${PYTHONPATH}
 export STOQLIB_TEST_QUICK=1
