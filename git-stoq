@@ -175,7 +175,8 @@ export STOQ_DISABLE_CRASHREPORT=1
 
 for dir in kiwi stoqdrivers stoq; do
     cd \$CHECKOUT/\$dir
-    kiwi-i18n -c > /dev/null 2>&1
+    mkdir -p locale/pt_BR/LC_MESSAGES
+    msgfmt po/pt_BR.po -o locale/pt_BR/LC_MESSAGES/stoq.mo
 done
 # cd to the working tree, so we are ready to work!
 cd \$CHECKOUT
