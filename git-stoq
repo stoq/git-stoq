@@ -27,7 +27,6 @@
 
 PROGNAME="git-stoq"
 MANIFEST_URL="http://gerrit.async.com.br/stoq-manifest"
-CONFIG=$HOME/.stoq-dev.git
 BIN_PATH=$HOME/bin
 REPO_PATH=$BIN_PATH/repo
 PROJECTS="kiwi stoq stoqdrivers"
@@ -46,7 +45,7 @@ usage () {
 }
 
 init () {
-  CHECKOUT=$(cat $CONFIG)
+  CHECKOUT=$(git config stoq.checkout)
   TREE=$1
 
   CHECKOUT_TREE=$CHECKOUT/$TREE
@@ -65,8 +64,10 @@ setup () {
   if [ -z "$CHECKOUT" ]; then
     CHECKOUT=~/devel
   fi
+  eval CHECKOUT=$CHECKOUT
 
-  echo $CHECKOUT > $CONFIG
+  git config --global stoq.checkout $CHECKOUT
+
   if [ ! -d "$CHECKOUT" ]; then
      mkdir -p $CHECKOUT
   fi
@@ -79,7 +80,7 @@ setup () {
 }
 
 update () {
-  CHECKOUT=$(cat $CONFIG)
+  CHECKOUT=$(git config stoq.checkout)
   TREE=$1
   cd $CHECKOUT/$TREE/kiwi && git pull
   cd $CHECKOUT/$TREE/stoqdrivers && git pull
@@ -88,7 +89,7 @@ update () {
 }
 
 list() {
-  CHECKOUT=$(cat $CONFIG)
+  CHECKOUT=$(git config stoq.checkout)
   ls $CHECKOUT|sort
   exit
 }
@@ -105,7 +106,7 @@ repo () {
   fi
 
   TREE=""
-  CHECKOUT=$(cat $CONFIG)
+  CHECKOUT=$(git config stoq.checkout)
   if [ ! -d "$CHECKOUT/.repo" ]; then
     echo "Repo configuration did not exist. Initiating it..."
     cd $CHECKOUT
@@ -121,7 +122,7 @@ repo () {
 }
 
 develop () {
-  CHECKOUT=$(cat $CONFIG)
+  CHECKOUT=$(git config stoq.checkout)
   TREE=$1
   if [ -z "$TREE" ]; then
       if [ "$(ls $CHECKOUT|wc -l)" = "1" ]; then
@@ -192,6 +193,12 @@ if [ $? != 0 ] ; then exit 1 ; fi
 
 # Note the quotes around `$TEMP': they are essential!
 eval set -- "$TEMP"
+
+OLD_CONFIG=$HOME/.stoq-dev.git
+if [ -f $OLD_CONFIG ]; then
+   git config --global stoq.checkout $(cat $OLD_CONFIG)
+   rm $OLD_CONFIG
+fi
 
 while true; do
   case "$1" in
