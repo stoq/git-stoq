@@ -166,13 +166,18 @@ _shell () {
   SCRIPT=$(tempfile --suffix=.sh)
   trap "rm $SCRIPT" EXIT
   cat <<EOF > $SCRIPT
-test -f ~/.bashrc && source ~/.bashrc
-source /etc/bash_completion
+# This list of environment variables are placed before the source lines,
+# so that they can be customized in the users ~/.bashrc
 export STOQ_BRANCH=$TREE
-export PATH=$CHECKOUT/stoq/bin:\$PATH
-export PYTHONPATH=$CHECKOUT/stoq:$CHECKOUT/kiwi:$CHECKOUT/stoqdrivers:\${PYTHONPATH}
 export STOQLIB_TEST_QUICK=1
 export STOQ_DISABLE_CRASHREPORT=1
+
+test -f ~/.bashrc && source ~/.bashrc
+test -f /etc/bash_completion && source /etc/bash_completion
+
+# This is updated after the users environment variables has been loaded
+export PATH=$CHECKOUT/stoq/bin:\$PATH
+export PYTHONPATH=$CHECKOUT/stoq:$CHECKOUT/kiwi:$CHECKOUT/stoqdrivers:\${PYTHONPATH}
 
 for dir in kiwi stoqdrivers stoq; do
     cd \$CHECKOUT/\$dir
