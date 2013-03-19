@@ -101,7 +101,7 @@ repo () {
   if [ ! -f "$REPO_PATH" ]; then
     echo "No repo found... Download it to $REPO_PATH"
     # Instructions copied from: http://source.android.com/source/downloading.html
-    curl https://dl-ssl.google.com/dl/googlesource/git-repo/repo > $REPO_PATH
+    wget https://dl-ssl.google.com/dl/googlesource/git-repo/repo -O $REPO_PATH
     chmod a+x $REPO_PATH
   fi
 
