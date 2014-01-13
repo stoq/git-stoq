@@ -27,6 +27,7 @@
 
 PROGNAME="git-stoq"
 MANIFEST_URL="git://github.com/stoq/stoq-manifest"
+ENV_PATH="stoq/tools/env.sh"
 BIN_PATH=$HOME/bin
 REPO_PATH=$BIN_PATH/repo
 PROJECTS="kiwi stoq stoqdrivers"
@@ -118,7 +119,7 @@ repo () {
     done
   fi
 
-  _shell $CHECKOUT $TREE
+  bash $CHECKOUT/$ENV_PATH
 }
 
 develop () {
@@ -135,7 +136,7 @@ develop () {
   fi
 
   echo "Entering tree: $TREE"
-  _shell $CHECKOUT $TREE
+  bash $CHECKOUT/$TREE/$ENV_PATH
 }
 
 _configure () {
@@ -145,57 +146,6 @@ _configure () {
   cd $CHECKOUT/$PROJECT
   git config remote.review.url ssh+git://gerrit.async.com.br:29418/$PROJECT
   git config remote.review.push HEAD:refs/for/master
-}
-
-_shell () {
-  TREE=$2
-  if [ -z "$TREE" ]; then
-    # When using repo, put 'stoq' on TREE for PS1
-    TREE="stoq"
-  fi
-
-  export CHECKOUT="$1/$2"
-
-  # We can't rely on PROJECTS here since there can be others on the checkout
-  for PROJECT in `ls $CHECKOUT | sort`; do
-    PROJECT_PATH=$CHECKOUT/$PROJECT
-    # Make sure we add new hooks every time the shell inits
-    if [ -d "$PROJECT_PATH/tools/git-hooks/" ]; then
-      cp -au $PROJECT_PATH/tools/git-hooks/* \
-             $PROJECT_PATH/.git/hooks/
-    fi
-
-    PO_FILE="$PROJECT_PATH/po/pt_BR.po"
-    MO_DIR="$PROJECT_PATH/locale/pt_BR/LC_MESSAGES"
-    MO_FILE="$MO_DIR/stoq.mo"
-    # Compile translations for pt_BR if they exist and are newer than existing
-    if [ -f "$PO_FILE" ] && [ "$PO_FILE" -nt "$MO_FILE" ]; then
-      mkdir -p $MO_DIR
-      msgfmt $PO_FILE -o $MO_FILE
-    fi
-  done
-
-  SCRIPT=$(tempfile --suffix=.sh)
-  trap "rm $SCRIPT" EXIT
-  cat <<EOF > $SCRIPT
-# This list of environment variables are placed before the source lines,
-# so that they can be customized in the users ~/.bashrc
-export STOQ_BRANCH=$TREE
-export STOQLIB_TEST_QUICK=1
-export STOQ_DISABLE_CRASHREPORT=1
-
-test -f ~/.bashrc && source ~/.bashrc
-test -f /etc/bash_completion && source /etc/bash_completion
-
-# This is updated after the users environment variables has been loaded
-export PATH=$CHECKOUT/stoq/bin:\$PATH
-export PYTHONPATH=$CHECKOUT/stoq:$CHECKOUT/kiwi:$CHECKOUT/stoqdrivers:\${PYTHONPATH}
-
-# cd to the working tree, so we are ready to work!
-cd \$CHECKOUT
-EOF
-  bash --rcfile $SCRIPT
-  exit
 }
 
 TEMP=`getopt -o hi:lrsu --long help,init:,list,repo,setup,update \
