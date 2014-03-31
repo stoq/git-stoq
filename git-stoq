@@ -27,7 +27,7 @@
 
 PROGNAME="git-stoq"
 MANIFEST_URL="git://github.com/stoq/stoq-manifest"
-ENV_PATH="stoq/tools/env.sh"
+ENV_PATH="stoq/utils/env.sh"
 BIN_PATH=$HOME/bin
 REPO_PATH=$BIN_PATH/repo
 PROJECTS="kiwi stoq stoqdrivers"
