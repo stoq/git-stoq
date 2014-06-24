@@ -146,6 +146,9 @@ _configure () {
   cd $CHECKOUT/$PROJECT
   git config remote.review.url ssh+git://gerrit.async.com.br:29418/$PROJECT
   git config remote.review.push HEAD:refs/for/master
+
+  git submodule init
+  git submodule update
 }
 
 TEMP=`getopt -o hi:lrsu --long help,init:,list,repo,setup,update \
